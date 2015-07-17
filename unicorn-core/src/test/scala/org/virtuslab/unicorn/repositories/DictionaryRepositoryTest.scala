@@ -28,7 +28,7 @@ class DictionaryRepositoryTest extends BaseTest[Long] with LongTestUnicorn {
     } yield dictionaryEntry.value
 
     override protected def exists(entry: DictionaryEntry)(implicit session: Session): Boolean =
-      findQuery(entry).firstOption.nonEmpty
+      findQuery(entry).headOption.nonEmpty
   }
 
   "Dictionary repository" should "save and query users" in rollback {

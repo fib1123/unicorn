@@ -4,7 +4,7 @@ import java.util.UUID
 
 import org.scalatest.{ FlatSpecLike, Matchers }
 import org.virtuslab.unicorn._
-import scala.slick.driver.{ H2Driver, JdbcDriver }
+import slick.driver.{ H2Driver, JdbcDriver }
 import scala.Some
 
 object UUIDUnicorn extends UnicornCore[UUID] with HasJdbcDriver {
@@ -23,7 +23,7 @@ trait UUIDTable extends UUIDTestUnicorn {
 
   import unicorn._
   import driver.profile._
-  import driver.simple._
+  import driver.api._
 
   case class UniqueUserId(id: UUID) extends BaseId
 

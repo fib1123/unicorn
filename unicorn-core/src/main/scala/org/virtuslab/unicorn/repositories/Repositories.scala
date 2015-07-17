@@ -7,7 +7,7 @@ protected[unicorn] trait Repositories[Underlying]
     with IdRepositories[Underlying] {
   self: HasJdbcDriver with Identifiers[Underlying] with Tables[Underlying] =>
 
-  import driver.simple._
+  import driver.api._
 
   /**
    * Implementation detail - common methods for all repositories.

@@ -5,7 +5,7 @@ import org.virtuslab.unicorn.{ HasJdbcDriver, Tables, Identifiers }
 protected[unicorn] trait JunctionRepositories[Underlying] {
   self: HasJdbcDriver with Tables[Underlying] with Identifiers[Underlying] with Repositories[Underlying] =>
 
-  import driver.simple.{ Table => _, _ }
+  import driver.api.{ Table => _, _ }
 
   /**
    * Repository with basic methods for junction tables.
@@ -15,28 +15,28 @@ protected[unicorn] trait JunctionRepositories[Underlying] {
   class JunctionRepository[First: BaseColumnType, Second: BaseColumnType, Table <: JunctionTable[First, Second]](val query: TableQuery[Table])
       extends CommonRepositoryMethods[(First, Second), Table](query) {
 
-    protected def findOneQueryFun(first: Column[First], second: Column[Second]) =
+    protected def findOneQueryFun(first: Rep[First], second: Rep[Second]) =
       query.filter(row => row.columns._1 === first && row.columns._2 === second)
 
     protected val findOneQueryCompiled = Compiled(findOneQueryFun _)
 
-    protected def existsQueryFun(first: Column[First], second: Column[Second]) = findOneQueryFun(first, second).exists
+    protected def existsQueryFun(first: Rep[First], second: Rep[Second]) = findOneQueryFun(first, second).exists
 
     protected val existsQuery = Compiled(existsQueryFun _)
 
-    protected def findByFirstFun(first: Column[First]) = query.filter(_.columns._1 === first)
+    protected def findByFirstFun(first: Rep[First]) = query.filter(_.columns._1 === first)
 
     protected val findByFirstQueryCompiled = Compiled(findByFirstFun _)
 
-    protected def findSecondByFirstFun(first: Column[First]) = findByFirstFun(first).map(_.columns._2)
+    protected def findSecondByFirstFun(first: Rep[First]) = findByFirstFun(first).map(_.columns._2)
 
     protected val findSecondByFirstQuery = Compiled(findSecondByFirstFun _)
 
-    protected def findBySecondFun(second: Column[Second]) = query.filter(_.columns._2 === second)
+    protected def findBySecondFun(second: Rep[Second]) = query.filter(_.columns._2 === second)
 
     protected val findBySecondQuery = Compiled(findBySecondFun _)
 
-    protected def findFirstBySecondFun(second: Column[Second]) = findBySecondFun(second).map(_.columns._1)
+    protected def findFirstBySecondFun(second: Rep[Second]) = findBySecondFun(second).map(_.columns._1)
 
     protected val findFirstBySecondQuery = Compiled(findFirstBySecondFun _)
 

@@ -2,7 +2,7 @@ package org.virtuslab.unicorn
 
 import play.api.data.format.Formats._
 
-import scala.slick.lifted.ProvenShape
+import slick.lifted.ProvenShape
 
 object StringPlayUnicorn extends UnicornPlay[String]
 

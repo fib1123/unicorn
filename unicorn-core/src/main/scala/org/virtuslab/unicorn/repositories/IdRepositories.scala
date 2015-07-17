@@ -7,7 +7,7 @@ import org.virtuslab.unicorn.{ HasJdbcDriver, Identifiers, Tables }
 protected[unicorn] trait IdRepositories[Underlying] {
   self: HasJdbcDriver with Identifiers[Underlying] with Tables[Underlying] with Repositories[Underlying] =>
 
-  import driver.simple.{ Table => _, _ }
+  import driver.api.{ Table => _, _ }
 
   /**
    * Base class for all queries with an [[org.virtuslab.unicorn.Identifiers.BaseId]].
@@ -30,7 +30,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
     protected lazy val allIdsQuery = query.map(_.id)
 
     /** Query element by id, method version. */
-    protected def byIdFunc(id: Column[Id]) = query.filter(_.id === id)
+    protected def byIdFunc(id: Rep[Id]) = query.filter(_.id === id)
 
     /** Query by multiple ids. */
     protected def byIdsQuery(ids: Seq[Id]) = query.filter(_.id inSet ids)
@@ -61,7 +61,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return Option(element)
      */
-    def findById(id: Id)(implicit session: Session): Option[Entity] = byIdQuery(id).firstOption
+    def findById(id: Id)(implicit session: Session): Option[Entity] = byIdQuery(id).headOption
 
     /**
      * Clones element by id.
@@ -71,7 +71,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @return Option(id) of new element
      */
     def copyAndSave(id: Id)(implicit session: Session): Option[Id] =
-      findById(id).map(elem => queryReturningId insert elem)
+      findById(id).map(elem => queryReturningId insert elem) // insert
 
     /**
      * Finds one element by id.

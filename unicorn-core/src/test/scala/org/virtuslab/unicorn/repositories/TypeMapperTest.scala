@@ -34,6 +34,7 @@ class TypeMapperTest extends BaseTest[Long] with LongTestUnicorn {
       val joda = JodaRow(DateTime.now(), Duration.millis(120), LocalDate.now())
       jodaQuery insert joda
 
-      jodaQuery.first shouldEqual joda
+      // .head .first
+      jodaQuery.head shouldEqual joda
   }
 }

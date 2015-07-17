@@ -28,7 +28,7 @@ trait BasePlayTest
   override lazy val unicorn: Unicorn[Long] with HasJdbcDriver = LongUnicornPlay
 
   override protected def beforeEach(data: TestData): Unit = {
-    import scala.slick.jdbc.StaticQuery
+    import slick.jdbc.StaticQuery
     DB.withSession(session =>
       StaticQuery.queryNA[Int]("DROP ALL OBJECTS").execute(session)
     )
