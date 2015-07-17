@@ -2,12 +2,21 @@ package org.virtuslab.unicorn.repositories
 
 import org.virtuslab.unicorn.{ HasJdbcDriver, Tables, Identifiers }
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+
 protected[unicorn] trait Repositories[Underlying]
     extends JunctionRepositories[Underlying]
     with IdRepositories[Underlying] {
   self: HasJdbcDriver with Identifiers[Underlying] with Tables[Underlying] =>
 
   import driver.api._
+
+  protected val queryTimeout = 1.second
+
+  private[unicorn] def invokeAction[R, S <: slick.dbio.NoStream, E <: slick.dbio.Effect](action: DBIOAction[R, S, E])(implicit session: Session) = {
+    Await.result(session.database.run(action), queryTimeout)
+  }
 
   /**
    * Implementation detail - common methods for all repositories.
@@ -18,14 +27,14 @@ protected[unicorn] trait Repositories[Underlying]
      * @param session implicit session param for query
      * @return all elements of type A
      */
-    def findAll()(implicit session: Session): Seq[Entity] = query.list
+    def findAll()(implicit session: Session): Seq[Entity] = invokeAction(query.result)
 
     /**
      * Deletes all elements in table.
      * @param session implicit session param for query
      * @return number of deleted elements
      */
-    def deleteAll()(implicit session: Session): Int = query.delete
+    def deleteAll()(implicit session: Session): Int = invokeAction(query.delete)
 
     /**
      * Creates table definition in database.
@@ -63,7 +72,7 @@ protected[unicorn] trait Repositories[Underlying]
      */
     def save(elem: Entity)(implicit session: Session): Entity = {
       if (!exists(elem)) {
-        query.insert(elem)
+        invokeAction(query += elem)
       }
       elem
     }

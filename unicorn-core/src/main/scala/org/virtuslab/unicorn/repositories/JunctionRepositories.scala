@@ -49,7 +49,7 @@ protected[unicorn] trait JunctionRepositories[Underlying] {
      * @return number of deleted elements (0 or 1)
      */
     def delete(first: First, second: Second)(implicit session: Session): Int =
-      findOneQueryCompiled((first, second)).delete
+      invokeAction(findOneQueryCompiled((first, second)).delete)
 
     /**
      * Checks if element exists in database.
@@ -60,7 +60,7 @@ protected[unicorn] trait JunctionRepositories[Underlying] {
      * @return true if element exists in database
      */
     def exists(first: First, second: Second)(implicit session: Session): Boolean =
-      existsQuery((first, second)).run
+      invokeAction(existsQuery((first, second)).result)
 
     /**
      * Saves one element if it's not present in db already.
@@ -70,32 +70,32 @@ protected[unicorn] trait JunctionRepositories[Underlying] {
      * @param session implicit session
      */
     def save(a: First, b: Second)(implicit session: Session): Unit = {
-      if (!exists(a, b)) query.insert((a, b))
+      if (!exists(a, b)) invokeAction(query += (a -> b))
     }
 
     /**
      * @param a element to query by
      * @return all b values for given a
      */
-    def forA(a: First)(implicit session: Session): Seq[Second] = findSecondByFirstQuery(a).run
+    def forA(a: First)(implicit session: Session): Seq[Second] = invokeAction(findSecondByFirstQuery(a).result)
 
     /**
      * @param b element to query by
      * @return all a values for given b
      */
-    def forB(b: Second)(implicit session: Session): Seq[First] = findFirstBySecondQuery(b).run
+    def forB(b: Second)(implicit session: Session): Seq[First] = invokeAction(findFirstBySecondQuery(b).result)
 
     /**
      * Delete all rows with given a value.
      * @param a element to query by
      */
-    def deleteForA(a: First)(implicit session: Session): Int = findByFirstQueryCompiled(a).delete
+    def deleteForA(a: First)(implicit session: Session): Int = invokeAction(findByFirstQueryCompiled(a).delete)
 
     /**
      * Delete all rows with given b value.
      * @param b element to query by
      */
-    def deleteForB(b: Second)(implicit session: Session): Int = findBySecondQuery(b).delete
+    def deleteForB(b: Second)(implicit session: Session): Int = invokeAction(findBySecondQuery(b).delete)
 
   }
 

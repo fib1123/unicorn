@@ -1,9 +1,9 @@
 package org.virtuslab.unicorn
 
-import play.api.libs.json.Format
 import play.api.data.format.Formats._
 import play.api.data.format.Formatter
-import play.api.db.slick.Config
+import play.api.db.slick.DatabaseConfigProvider
+import play.api.libs.json.Format
 import play.api.mvc.{ PathBindable, QueryStringBindable }
 
 trait UnicornPlayLike[Underlying]
@@ -19,7 +19,7 @@ trait UnicornPlayLike[Underlying]
 
   def underlyingPathBinder: PathBindable[Underlying]
 
-  override lazy val driver = Config.driver
+  override lazy val driver = DatabaseConfigProvider.get(play.api.Play.current).driver
 
   override type IdCompanion[Id <: BaseId] = PlayCompanion[Id]
 }

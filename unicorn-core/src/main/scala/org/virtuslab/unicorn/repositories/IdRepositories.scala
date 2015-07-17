@@ -61,7 +61,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return Option(element)
      */
-    def findById(id: Id)(implicit session: Session): Option[Entity] = byIdQuery(id).headOption
+    def findById(id: Id)(implicit session: Session): Option[Entity] = invokeAction(byIdQuery(id).result.headOption)
 
     /**
      * Clones element by id.
@@ -71,7 +71,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @return Option(id) of new element
      */
     def copyAndSave(id: Id)(implicit session: Session): Option[Id] =
-      findById(id).map(elem => queryReturningId insert elem) // insert
+      findById(id).map(elem => invokeAction(queryReturningId += elem)) // insert
 
     /**
      * Finds one element by id.
@@ -90,7 +90,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return Seq(element)
      */
-    def findByIds(ids: Seq[Id])(implicit session: Session): Seq[Entity] = byIdsQuery(ids).list
+    def findByIds(ids: Seq[Id])(implicit session: Session): Seq[Entity] = invokeAction(byIdsQuery(ids).result)
 
     /**
      * Deletes one element by id.
@@ -99,14 +99,13 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return number of deleted elements (0 or 1)
      */
-    def deleteById(id: Id)(implicit session: Session): Int = byIdQuery(id).delete
-      .ensuring(_ <= 1, "Delete by id removed more than one row")
+    def deleteById(id: Id)(implicit session: Session): Int = invokeAction(byIdQuery(id).delete)
 
     /**
      * @param session implicit session
      * @return Sequence of ids
      */
-    def allIds()(implicit session: Session): Seq[Id] = allIdsQuery.list
+    def allIds()(implicit session: Session): Seq[Id] = invokeAction(allIdsQuery.result)
 
     /**
      * Saves one element.
@@ -124,7 +123,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
           else throw new SQLException(s"Error during save in table: $tableName, " +
             s"for id: $id - $rowsUpdated rows updated, expected: 1. Entity: $elem")
         case None =>
-          val result = queryReturningId insert elem
+          val result = invokeAction(queryReturningId += elem)
           afterSave(elem)
           result
       }

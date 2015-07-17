@@ -5,7 +5,6 @@ import java.util.UUID
 import org.scalatest.{ FlatSpecLike, Matchers }
 import org.virtuslab.unicorn._
 import slick.driver.{ H2Driver, JdbcDriver }
-import scala.Some
 
 object UUIDUnicorn extends UnicornCore[UUID] with HasJdbcDriver {
   override val driver: JdbcDriver = H2Driver
