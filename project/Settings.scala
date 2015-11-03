@@ -56,7 +56,8 @@ object Settings {
       "-feature",
       "-deprecation",
       "-unchecked",
-      "-Xlint"
+      "-Xlint",
+      "-Xfatal-warnings"
     ),
     updateOptions := updateOptions.value.withCachedResolution(true),
     ScoverageKeys.coverageFailOnMinimum := true

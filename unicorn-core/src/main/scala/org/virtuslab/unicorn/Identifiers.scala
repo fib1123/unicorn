@@ -1,6 +1,6 @@
 package org.virtuslab.unicorn
 
-import slick.lifted.MappedTo
+import scala.slick.lifted.MappedTo
 
 trait Identifiers[Underlying] {
   self: Unicorn[Underlying] =>

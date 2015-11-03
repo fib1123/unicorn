@@ -1,6 +1,6 @@
 package org.virtuslab.unicorn.repositories
 
-import org.virtuslab.unicorn.TestUnicorn.driver.api._
+import org.virtuslab.unicorn.TestUnicorn.driver.simple._
 import org.virtuslab.unicorn.{ BaseTest, LongTestUnicorn }
 import org.joda.time.{ DateTime, Duration, LocalDate }
 
@@ -16,24 +16,24 @@ class TypeMapperTest extends BaseTest[Long] with LongTestUnicorn {
 
   class Joda(tag: Tag) extends BaseTable[JodaRow](tag, "JODA") {
 
-    def dateTime = column[DateTime]("EMAIL")
+    def dateTime = column[DateTime]("EMAIL", O.NotNull)
 
-    def duration = column[Duration]("FIRST_NAME")
+    def duration = column[Duration]("FIRST_NAME", O.NotNull)
 
-    def localDate = column[LocalDate]("LAST_NAME")
+    def localDate = column[LocalDate]("LAST_NAME", O.NotNull)
 
     override def * = (dateTime, duration, localDate) <> (JodaRow.tupled, JodaRow.unapply)
   }
 
-  val jodaQuery = TableQuery[Joda]
+  val jodaQuery: TableQuery[Joda] = TableQuery[Joda]
 
   it should "provide mappings for joda.time types" in rollback {
     implicit session =>
-      invokeAction(jodaQuery.schema.create)
+      jodaQuery.ddl.create
 
       val joda = JodaRow(DateTime.now(), Duration.millis(120), LocalDate.now())
-      invokeAction(jodaQuery += joda)
+      jodaQuery insert joda
 
-      invokeAction(jodaQuery.result.head) shouldEqual joda
+      jodaQuery.first shouldEqual joda
   }
 }

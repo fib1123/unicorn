@@ -7,7 +7,7 @@ import org.virtuslab.unicorn.{ HasJdbcDriver, Identifiers, Tables }
 protected[unicorn] trait IdRepositories[Underlying] {
   self: HasJdbcDriver with Identifiers[Underlying] with Tables[Underlying] with Repositories[Underlying] =>
 
-  import driver.api.{ Table => _, _ }
+  import driver.simple.{ Table => _, _ }
 
   /**
    * Base class for all queries with an [[org.virtuslab.unicorn.Identifiers.BaseId]].
@@ -30,7 +30,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
     protected lazy val allIdsQuery = query.map(_.id)
 
     /** Query element by id, method version. */
-    protected def byIdFunc(id: Rep[Id]) = query.filter(_.id === id)
+    protected def byIdFunc(id: Column[Id]) = query.filter(_.id === id)
 
     /** Query by multiple ids. */
     protected def byIdsQuery(ids: Seq[Id]) = query.filter(_.id inSet ids)
@@ -61,7 +61,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return Option(element)
      */
-    def findById(id: Id)(implicit session: Session): Option[Entity] = invokeAction(byIdQuery(id).result.headOption)
+    def findById(id: Id)(implicit session: Session): Option[Entity] = byIdQuery(id).firstOption
 
     /**
      * Clones element by id.
@@ -71,7 +71,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @return Option(id) of new element
      */
     def copyAndSave(id: Id)(implicit session: Session): Option[Id] =
-      findById(id).map(elem => invokeAction(queryReturningId += elem))
+      findById(id).map(elem => queryReturningId insert elem)
 
     /**
      * Finds one element by id.
@@ -90,7 +90,7 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return Seq(element)
      */
-    def findByIds(ids: Seq[Id])(implicit session: Session): Seq[Entity] = invokeAction(byIdsQuery(ids).result)
+    def findByIds(ids: Seq[Id])(implicit session: Session): Seq[Entity] = byIdsQuery(ids).list
 
     /**
      * Deletes one element by id.
@@ -99,13 +99,14 @@ protected[unicorn] trait IdRepositories[Underlying] {
      * @param session implicit session
      * @return number of deleted elements (0 or 1)
      */
-    def deleteById(id: Id)(implicit session: Session): Int = invokeAction(byIdQuery(id).delete)
+    def deleteById(id: Id)(implicit session: Session): Int = byIdQuery(id).delete
+      .ensuring(_ <= 1, "Delete by id removed more than one row")
 
     /**
      * @param session implicit session
      * @return Sequence of ids
      */
-    def allIds()(implicit session: Session): Seq[Id] = invokeAction(allIdsQuery.result)
+    def allIds()(implicit session: Session): Seq[Id] = allIdsQuery.list
 
     /**
      * Saves one element.
@@ -117,13 +118,13 @@ protected[unicorn] trait IdRepositories[Underlying] {
     def save(elem: Entity)(implicit session: Session): Id = {
       elem.id match {
         case Some(id) =>
-          val rowsUpdated = invokeAction(byIdFunc(id).update(elem))
+          val rowsUpdated = byIdFunc(id).update(elem)
           afterSave(elem)
           if (rowsUpdated == 1) id
           else throw new SQLException(s"Error during save in table: $tableName, " +
             s"for id: $id - $rowsUpdated rows updated, expected: 1. Entity: $elem")
         case None =>
-          val result = invokeAction(queryReturningId += elem)
+          val result = queryReturningId insert elem
           afterSave(elem)
           result
       }

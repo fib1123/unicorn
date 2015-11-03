@@ -1,6 +1,6 @@
 package org.virtuslab.unicorn
 
-import slick.driver.H2Driver
+import scala.slick.driver.H2Driver
 
 object TestUnicorn
     extends LongUnicornCore

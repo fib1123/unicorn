@@ -1,13 +1,12 @@
 package org.virtuslab.unicorn
 
-import slick.driver.H2Driver.api._
 import org.scalatest._
 
 trait RollbackHelper[Underlying] {
 
   val unicorn: Unicorn[Underlying] with HasJdbcDriver
 
-  import unicorn.driver.api._
+  import unicorn.driver.simple._
 
   def DB: unicorn.driver.profile.backend.DatabaseDef
 
@@ -37,5 +36,4 @@ trait BaseTest[Underlying] extends FlatSpecLike with Matchers with BeforeAndAfte
   val dbDriver = "org.h2.Driver"
 
   override lazy val DB = unicorn.driver.profile.backend.Database.forURL(dbURL, driver = dbDriver)
-  //    override lazy val DB = Database.forURL(dbURL, driver = dbDriver).asInstanceOf[unicorn.driver.profile.backend.DatabaseDef]
 }

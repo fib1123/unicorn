@@ -1,12 +1,12 @@
 package org.virtuslab.unicorn
 
-import slick.lifted.Index
-import slick.lifted.ProvenShape
+import scala.slick.lifted.Index
+import scala.slick.lifted.ProvenShape
 
 protected[unicorn] trait Tables[Underlying] extends TypeMappers {
   self: HasJdbcDriver with Identifiers[Underlying] =>
 
-  import driver.api._
+  import driver.simple._
 
   /**
    * Base class for all tables that contains an id.
@@ -38,7 +38,7 @@ protected[unicorn] trait Tables[Underlying] extends TypeMappers {
     protected val idColumnName: String = "id"
 
     /** @return id column representation of this table */
-    final def id: Rep[Id] = column[Id](idColumnName, O.PrimaryKey, O.AutoInc)
+    final def id: Column[Id] = column[Id](idColumnName, O.PrimaryKey, O.AutoInc)
   }
 
   /**
@@ -80,7 +80,7 @@ protected[unicorn] trait Tables[Underlying] extends TypeMappers {
      * instead of def * = colA ~ colB write def columns = colA -> colB
      * @return
      */
-    def columns: (Rep[First], Rep[Second])
+    def columns: (Column[First], Column[Second])
 
     final def * : ProvenShape[(First, Second)] = (columns._1, columns._2)
 
